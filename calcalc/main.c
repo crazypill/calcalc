@@ -120,6 +120,8 @@ int process_calendar( const char* calendar_path )
     char* lineBuffer = NULL;
     size_t bufSize = sizeof( lineBuffer );
     ssize_t lineSize = 0;
+    double total_hours = 0;
+    
     do
     {
         lineSize = getline( &lineBuffer, &bufSize, calFile );
@@ -127,8 +129,9 @@ int process_calendar( const char* calendar_path )
         // find the beginning of the record, and mark the file location, we will rewind here for each record look up
         if( find_key( "BEGIN:VEVENT", lineBuffer ) )
         {
-            struct tm start;
-            struct tm end;
+            struct tm start = {};
+            struct tm end   = {};
+            
             if( find_record( "DTSTART", &lineBuffer, &bufSize, calFile ) )
                 parse_date_time_string( lineBuffer, &start );
 
@@ -136,7 +139,11 @@ int process_calendar( const char* calendar_path )
                 parse_date_time_string( lineBuffer, &end );
 
             double delta = difftime( mktime(&end), mktime(&start) ) / (60 * 60);
-            printf( "%d/%d/%d: %g - ", start.tm_mon + 1, start.tm_mday, start.tm_year, delta );
+            total_hours += delta;
+            
+            char dateString[1024] = {};
+            strftime(dateString, sizeof(dateString), "%m/%d/%Y", &start);
+            printf( "%s: %g - ", dateString, delta );
 
             if( find_record( "SUMMARY", &lineBuffer, &bufSize, calFile ) )
                 printf( "%s", lineBuffer );
@@ -147,6 +154,8 @@ int process_calendar( const char* calendar_path )
     }
     while( lineSize >= 0 );
     
+    printf( "total hours: %g\n", total_hours );
+
     fclose( calFile );
     return 0;
 }
