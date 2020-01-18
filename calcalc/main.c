@@ -27,7 +27,7 @@ void usage()
 
 int main( int argc, const char * argv[] )
 {
-    printf("folabs calendar parser 1.0\n");
+    printf("folabs calendar parser 1.0\n\n");
  
     const char* start_date = NULL;
     const char* end_date   = NULL;
@@ -61,7 +61,7 @@ int main( int argc, const char * argv[] )
     
     if( !s_calendar_path )
     {
-        printf( "no input calendar .ics file: %s\n", argv[0] );
+        printf( "no input calendar .ics file!\n" );
         usage();
         return -1;
     }
