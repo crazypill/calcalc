@@ -139,11 +139,14 @@ int process_calendar( const char* calendar_path )
                 printf( "%s", lineBuffer );
 
             // figure out how long this event is
-            int delta_hours = end.tm_hour - start.tm_hour;
-            int delta_mins  = end.tm_min  - start.tm_min;
-            int delta_secs  = end.tm_sec  - start.tm_sec;
+//            int delta_hours = end.tm_hour - start.tm_hour;
+//            int delta_mins  = start.tm_min  - start.tm_min;
+//            int delta_secs  = end.tm_sec  - start.tm_sec;
 
-            printf( "event[%d/%d/%d]: %d:%d:%d\n", start.tm_mon + 1, start.tm_mday, start.tm_year, delta_hours, delta_mins, delta_secs );
+//            printf( "event[%d/%d/%d]: %d:%d:%d\n", start.tm_mon + 1, start.tm_mday, start.tm_year, delta_hours, delta_mins, delta_secs );
+            double delta = difftime( mktime(&end), mktime(&start) ) / (60 * 60);
+            printf( "%d/%d/%d: %g", start.tm_mon + 1, start.tm_mday, start.tm_year, delta );
+
             
             skip_record( &lineBuffer, &bufSize, calFile );
             printf( "\n" );
