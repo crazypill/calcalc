@@ -135,23 +135,15 @@ int process_calendar( const char* calendar_path )
             if( find_record( "DTEND", &lineBuffer, &bufSize, calFile ) )
                 parse_date_time_string( lineBuffer, &end );
 
+            double delta = difftime( mktime(&end), mktime(&start) ) / (60 * 60);
+            printf( "%d/%d/%d: %g - ", start.tm_mon + 1, start.tm_mday, start.tm_year, delta );
+
             if( find_record( "SUMMARY", &lineBuffer, &bufSize, calFile ) )
                 printf( "%s", lineBuffer );
 
-            // figure out how long this event is
-//            int delta_hours = end.tm_hour - start.tm_hour;
-//            int delta_mins  = start.tm_min  - start.tm_min;
-//            int delta_secs  = end.tm_sec  - start.tm_sec;
-
-//            printf( "event[%d/%d/%d]: %d:%d:%d\n", start.tm_mon + 1, start.tm_mday, start.tm_year, delta_hours, delta_mins, delta_secs );
-            double delta = difftime( mktime(&end), mktime(&start) ) / (60 * 60);
-            printf( "%d/%d/%d: %g", start.tm_mon + 1, start.tm_mday, start.tm_year, delta );
-
-            
             skip_record( &lineBuffer, &bufSize, calFile );
             printf( "\n" );
         }
-//        printf( "line[%zd]: %s, bufSize: %zu\n", lineSize, lineBuffer, bufSize );
     }
     while( lineSize >= 0 );
     
