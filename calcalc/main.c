@@ -19,7 +19,7 @@ int process_calendar( const char* calendar_path );
 int main(int argc, const char * argv[])
 {
     // insert code here...
-    printf("Calendar hour parser running...\n");
+    printf("calendar hour parser running...\n");
     
     // look at args
     for( int i = 1; i < argc; i++ )
@@ -33,7 +33,6 @@ int main(int argc, const char * argv[])
                 case 'F':
                     // capture filename of exported calendar
                     s_calendar_path = argv[i + 1];
-                    printf( "got path: %s\n", s_calendar_path );
                     break;
             }
         }
@@ -73,7 +72,10 @@ int find_record( const char* key, char** lineBuffer, size_t* buf_size, FILE* cal
     {
         ssize_t lineSize = getline( lineBuffer, buf_size, cal_file );
         if( lineSize < 0 )
+        {
+            printf( "%s: failed to get line\n", __FUNCTION__ );
             return 0;
+        }
         
         // okay we found the start of a calendar record, let's find the start and end times
         if( find_key( key, *lineBuffer ) )
@@ -94,7 +96,10 @@ void skip_record( char** lineBuffer, size_t* buf_size, FILE* cal_file )
     {
         ssize_t lineSize = getline( lineBuffer, buf_size, cal_file );
         if( lineSize < 0 )
+        {
+            printf( "%s: failed to get line\n", __FUNCTION__ );
             return;
+        }
 
     } while( !is_end_of_record( *lineBuffer ) );
 }
