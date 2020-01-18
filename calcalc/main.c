@@ -10,7 +10,9 @@
 #include <string.h>
 #include <time.h>
 
-static const char* s_calendar_path = NULL;
+static const char*  s_calendar_path = NULL;
+static time_t s_start_date = 0;
+static time_t s_end_date = 0;
 
 int process_calendar( const char* calendar_path );
 
@@ -18,9 +20,11 @@ int process_calendar( const char* calendar_path );
 
 int main(int argc, const char * argv[])
 {
-    // insert code here...
     printf("calendar hour parser running...\n");
-    
+ 
+    const char* start_date = NULL;
+    const char* end_date   = NULL;
+
     // look at args
     for( int i = 1; i < argc; i++ )
     {
@@ -34,6 +38,16 @@ int main(int argc, const char * argv[])
                     // capture filename of exported calendar
                     s_calendar_path = argv[i + 1];
                     break;
+                    
+                case 's':
+                case 'S':
+                    start_date = argv[i + 1];
+                    break;
+
+                case 'e':
+                case 'E':
+                    end_date = argv[i + 1];
+                    break;
             }
         }
     }
@@ -44,6 +58,20 @@ int main(int argc, const char * argv[])
         return -1;
     }
     
+    if( start_date )
+    {
+        struct tm time = {0};
+        strptime( start_date, "%m/%d/%Y", &time );
+        s_start_date = mktime( &time );
+    }
+
+    if( end_date )
+    {
+        struct tm time = {0};
+        strptime( end_date, "%m/%d/%Y", &time );
+        s_end_date = mktime( &time );
+    }
+
     // process file looking for calendar events
     return process_calendar( s_calendar_path );
 }
@@ -115,6 +143,26 @@ void parse_date_time_string( const char* date, struct tm* time )
 }
 
 
+int is_in_date_window( time_t start, time_t end )
+{
+    // no inputs means we do all dates
+    if( !s_start_date && !s_end_date )
+        return 1;
+    
+    // compare start to start, if the input date is before the start date, the diff will be negative
+    int startDelta = 1;
+    int endDelta = 1;
+
+    if( s_start_date )
+        startDelta = difftime( start, s_start_date );
+    
+    if( s_end_date )
+        endDelta = difftime( s_end_date, end );
+    
+    return startDelta >= 0 && endDelta >= 0;
+}
+
+
 int process_calendar( const char* calendar_path )
 {
     // open the file and process it line by line with a mild state machine
@@ -143,18 +191,26 @@ int process_calendar( const char* calendar_path )
             if( find_record( "DTEND", &lineBuffer, &bufSize, calFile ) )
                 parse_date_time_string( lineBuffer, &end );
 
-            double delta = difftime( mktime(&end), mktime(&start) ) / (60 * 60);
-            total_hours += delta;
-            
-            char dateString[1024] = {};
-            strftime(dateString, sizeof(dateString), "%m/%d/%Y", &start);
-            printf( "%s: %g - ", dateString, delta );
+            time_t startTime = mktime( &start );
+            time_t endTime   = mktime( &end );
 
-            if( find_record( "SUMMARY", &lineBuffer, &bufSize, calFile ) )
-                printf( "%s", lineBuffer );
+            double duration = difftime( endTime, startTime ) / (60 * 60);
+            total_hours += duration;
+            
+            // see if we should output this record
+            if( is_in_date_window( startTime, endTime ) )
+            {
+                char dateString[1024] = {};
+                strftime( dateString, sizeof(dateString), "%m/%d/%Y", &start );
+                printf( "%s: %g hrs - ", dateString, duration );
+
+                if( find_record( "SUMMARY", &lineBuffer, &bufSize, calFile ) )
+                    printf( "%s", lineBuffer );
+
+                printf( "\n" );
+            }
 
             skip_record( &lineBuffer, &bufSize, calFile );
-            printf( "\n" );
         }
     }
     while( lineSize >= 0 );
