@@ -17,10 +17,17 @@ static time_t s_end_date = 0;
 int process_calendar( const char* calendar_path );
 
 
-
-int main(int argc, const char * argv[])
+void usage()
 {
-    printf("calendar hour parser running...\n");
+    printf( "  usage:    -f 'calendar file to process'\n"
+            "  optional  -s 'DD/MM/YYYY start date'\n"
+            "  optional  -e 'DD/MM/YYYY end date'\n" );
+}
+
+
+int main( int argc, const char * argv[] )
+{
+    printf("folabs calendar parser 1.0\n");
  
     const char* start_date = NULL;
     const char* end_date   = NULL;
@@ -54,7 +61,8 @@ int main(int argc, const char * argv[])
     
     if( !s_calendar_path )
     {
-        printf( "%s: no input calendar .ics file\n", argv[0] );
+        printf( "no input calendar .ics file: %s\n", argv[0] );
+        usage();
         return -1;
     }
     
