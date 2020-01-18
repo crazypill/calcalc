@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 #include <string.h>
-
+#include <time.h>
 
 static const char* s_calendar_path = NULL;
 
@@ -100,13 +100,13 @@ void skip_record( char** lineBuffer, size_t* buf_size, FILE* cal_file )
 }
 
 
-void parse_date_time_string( const char* date )
+void parse_date_time_string( const char* date, struct tm* time )
 {
     // for now just jump forward to the : -- which skips over the ; and then skips time zone specification (i.e. TZID=America/Los_Angeles)
     char* colon = strchr( date, ':' );
     
-    if( colon )
-        printf( "date: %s", &colon[1] );
+    if( colon && time )
+        strptime( &colon[1], "%Y%m%dT%H%M%S", time );
 }
 
 
@@ -127,15 +127,24 @@ int process_calendar( const char* calendar_path )
         // find the beginning of the record, and mark the file location, we will rewind here for each record look up
         if( find_key( "BEGIN:VEVENT", lineBuffer ) )
         {
+            struct tm start;
+            struct tm end;
             if( find_record( "DTSTART", &lineBuffer, &bufSize, calFile ) )
-                parse_date_time_string( lineBuffer );
+                parse_date_time_string( lineBuffer, &start );
 
             if( find_record( "DTEND", &lineBuffer, &bufSize, calFile ) )
-                printf( "end: %s", lineBuffer );
+                parse_date_time_string( lineBuffer, &end );
 
             if( find_record( "SUMMARY", &lineBuffer, &bufSize, calFile ) )
-                printf( "summary: %s", lineBuffer );
+                printf( "%s", lineBuffer );
 
+            // figure out how long this event is
+            int delta_hours = end.tm_hour - start.tm_hour;
+            int delta_mins  = end.tm_min  - start.tm_min;
+            int delta_secs  = end.tm_sec  - start.tm_sec;
+
+            printf( "event[%d/%d/%d]: %d:%d:%d\n", start.tm_mon + 1, start.tm_mday, start.tm_year, delta_hours, delta_mins, delta_secs );
+            
             skip_record( &lineBuffer, &bufSize, calFile );
             printf( "\n" );
         }
