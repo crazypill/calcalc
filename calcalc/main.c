@@ -195,11 +195,12 @@ int process_calendar( const char* calendar_path )
             time_t endTime   = mktime( &end );
 
             double duration = difftime( endTime, startTime ) / (60 * 60);
-            total_hours += duration;
             
             // see if we should output this record
             if( is_in_date_window( startTime, endTime ) )
             {
+                total_hours += duration;
+
                 char dateString[1024] = {};
                 strftime( dateString, sizeof(dateString), "%m/%d/%Y", &start );
                 printf( "%s: %g hrs - ", dateString, duration );
