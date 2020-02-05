@@ -38,6 +38,14 @@ int main( int argc, const char * argv[] )
         // look for command, single letter
         if( argv[i][0] == '-' )
         {
+            // check to see if they actually supplied an argument to the parameter
+            if( i + 1 >= argc )
+            {
+                printf( "missing argument!!\n" );
+                usage();
+                return -1;
+            }
+
             switch( argv[i][1] )
             {
                 case 'f':
