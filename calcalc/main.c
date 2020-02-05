@@ -20,8 +20,8 @@ int process_calendar( const char* calendar_path );
 void usage()
 {
     printf( "  usage:    -f 'calendar file to process'\n"
-            "  optional  -s 'DD/MM/YYYY start date'\n"
-            "  optional  -e 'DD/MM/YYYY end date'\n" );
+            "  optional  -s 'MM/DD/YYYY start date'\n"
+            "  optional  -e 'MM/DD/YYYY end date'\n" );
 }
 
 
